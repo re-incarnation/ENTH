@@ -35,10 +35,6 @@ class MainWindow(QMainWindow):
 
 
 
-        # =========================
-        # MAIN WINDOW
-        # =========================
-
         self.setWindowTitle(APP_NAME)
 
 
@@ -68,10 +64,6 @@ class MainWindow(QMainWindow):
         )
 
 
-
-        # =========================
-        # ROOT
-        # =========================
 
         self.root = QWidget()
 
@@ -103,10 +95,6 @@ class MainWindow(QMainWindow):
         self.layout.addStretch()
 
 
-
-        # =========================
-        # BUTTONS
-        # =========================
 
         self.btn_punish = QPushButton(
             "Наказание"
@@ -153,7 +141,6 @@ class MainWindow(QMainWindow):
             self.toggle_left
         )
 
-
         self.btn_settings.clicked.connect(
             self.toggle_bottom
         )
@@ -162,7 +149,6 @@ class MainWindow(QMainWindow):
 
         row1 = QHBoxLayout()
         row2 = QHBoxLayout()
-
 
 
         row1.addWidget(
@@ -196,7 +182,6 @@ class MainWindow(QMainWindow):
         # =========================
         # PANELS
         # =========================
-
 
         self.left_panel = PunishmentPanel()
 
@@ -246,31 +231,20 @@ class MainWindow(QMainWindow):
 
 
 
-        # =========================
-        # TRAY
-        # =========================
-
         self.tray = create_tray(
             self
         )
 
 
 
-    # =========================
-    # PANEL POSITIONS
-    # =========================
-
     def update_panels(self):
 
         geo = self.frameGeometry()
 
-
         x = geo.x()
         y = geo.y()
 
-        w = geo.width()
         h = geo.height()
-
 
 
         if self.left_open:
@@ -281,7 +255,6 @@ class MainWindow(QMainWindow):
             )
 
 
-
         if self.bottom_open:
 
             self.bottom_panel.move(
@@ -290,10 +263,6 @@ class MainWindow(QMainWindow):
             )
 
 
-
-    # =========================
-    # TOGGLES
-    # =========================
 
     def toggle_left(self):
 
@@ -307,7 +276,6 @@ class MainWindow(QMainWindow):
             self.left_panel.show()
 
             self.left_panel.raise_()
-
 
         else:
 
@@ -328,16 +296,11 @@ class MainWindow(QMainWindow):
 
             self.bottom_panel.raise_()
 
-
         else:
 
             self.bottom_panel.hide()
 
 
-
-    # =========================
-    # FOLLOW WINDOW
-    # =========================
 
     def moveEvent(self, event):
 
@@ -351,18 +314,11 @@ class MainWindow(QMainWindow):
 
 
 
-    # =========================
-    # DRAG
-    # =========================
-
     def mousePressEvent(self, event):
 
         if event.button() == Qt.LeftButton:
 
-            self.old_pos = (
-                event.globalPosition()
-                .toPoint()
-            )
+            self.old_pos = event.globalPosition().toPoint()
 
 
 
@@ -371,12 +327,10 @@ class MainWindow(QMainWindow):
         if self.old_pos:
 
             delta = (
-                event.globalPosition()
-                .toPoint()
+                event.globalPosition().toPoint()
                 -
                 self.old_pos
             )
-
 
             self.move(
                 self.x() + delta.x(),
@@ -384,10 +338,7 @@ class MainWindow(QMainWindow):
             )
 
 
-            self.old_pos = (
-                event.globalPosition()
-                .toPoint()
-            )
+            self.old_pos = event.globalPosition().toPoint()
 
 
 
@@ -397,11 +348,19 @@ class MainWindow(QMainWindow):
 
 
 
-    # =========================
-    # TRAY
-    # =========================
-
     def hide_to_tray(self):
+
+        if hasattr(self, "left_panel"):
+
+            self.left_panel.setVisible(False)
+            self.left_open = False
+
+
+        if hasattr(self, "bottom_panel"):
+
+            self.bottom_panel.setVisible(False)
+            self.bottom_open = False
+
 
         self.hide()
 
@@ -416,7 +375,6 @@ class MainWindow(QMainWindow):
         else:
 
             self.show()
-
             self.raise_()
 
 
@@ -425,9 +383,7 @@ class MainWindow(QMainWindow):
 
         self.tray.hide()
 
-        self.left_panel.close()
-
-        self.bottom_panel.close()
+        self.hide_to_tray()
 
         QApplication.quit()
 
@@ -435,6 +391,6 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event):
 
-        event.ignore()
-
         self.hide_to_tray()
+
+        event.ignore()
