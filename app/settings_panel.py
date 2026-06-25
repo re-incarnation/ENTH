@@ -192,6 +192,10 @@ class SettingsPanel(QWidget):
             "Debug"
         )
 
+        self.debug_btn.clicked.connect(
+            self.open_debug
+        )
+
         self.debug_btn.setFixedWidth(
             120
         )
@@ -361,3 +365,9 @@ class SettingsPanel(QWidget):
             os.startfile(
                 folder
             )
+
+    def open_debug(self):
+
+        if hasattr(self, "main_window"):
+
+            self.main_window.toggle_debug()

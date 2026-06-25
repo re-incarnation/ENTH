@@ -20,6 +20,8 @@ from app.config import (
 
 from app.punishment_panel import PunishmentPanel
 from app.settings_panel import SettingsPanel
+from app.debug_panel import DebugPanel
+from app.console_panel import ConsolePanel
 
 
 class MainWindow(QMainWindow):
@@ -30,6 +32,7 @@ class MainWindow(QMainWindow):
 
         self.left_open = False
         self.bottom_open = False
+        self.debug_open = False
 
         self.old_pos = None
 
@@ -51,10 +54,10 @@ class MainWindow(QMainWindow):
             500
         )
 
-
         self.setStyleSheet(f"""
             QMainWindow {{
                 background-color: {WINDOW_BG};
+                border: 1px solid rgba(230,230,230,35);
             }}
         """)
 
@@ -89,6 +92,10 @@ class MainWindow(QMainWindow):
 
         self.layout.addWidget(
             self.titlebar
+        )
+
+        self.layout.addSpacing(
+            6
         )
 
 
@@ -146,7 +153,7 @@ class MainWindow(QMainWindow):
         )
 
 
-
+        self.layout.setSpacing(6)
         row1 = QHBoxLayout()
         row2 = QHBoxLayout()
 
@@ -185,6 +192,52 @@ class MainWindow(QMainWindow):
 
         self.left_panel = PunishmentPanel()
 
+        self.debug_panel = DebugPanel()
+
+
+        self.debug_panel.setWindowFlags(
+            Qt.FramelessWindowHint |
+            Qt.WindowStaysOnTopHint
+        )
+
+
+        self.debug_panel.setWindowOpacity(
+            WINDOW_OPACITY
+        )
+
+
+        self.debug_panel.resize(
+            300,
+            255
+        )
+
+
+        self.debug_panel.hide()
+
+        self.debug_panel.console_btn.clicked.connect(
+            self.toggle_console
+        )
+
+        self.console_panel = ConsolePanel()
+
+
+        self.console_panel.setWindowFlags(
+            Qt.FramelessWindowHint |
+            Qt.WindowStaysOnTopHint
+        )
+
+
+        self.console_panel.resize(
+            1000,
+            400
+        )
+
+
+        self.console_panel.hide()
+
+
+        self.console_open = False
+
 
         self.left_panel.setWindowFlags(
             Qt.FramelessWindowHint |
@@ -208,6 +261,7 @@ class MainWindow(QMainWindow):
 
 
         self.bottom_panel = SettingsPanel()
+        self.bottom_panel.main_window = self
 
 
         self.bottom_panel.setWindowFlags(
@@ -247,6 +301,13 @@ class MainWindow(QMainWindow):
         h = geo.height()
 
 
+        if self.console_open:
+
+            self.console_panel.move(
+                self.x() + self.width(),
+                self.y()
+            )
+
         if self.left_open:
 
             self.left_panel.move(
@@ -259,6 +320,13 @@ class MainWindow(QMainWindow):
 
             self.bottom_panel.move(
                 x,
+                y + h
+            )
+
+        if hasattr(self, "debug_panel") and self.debug_panel.isVisible():
+
+            self.debug_panel.move(
+                x - self.debug_panel.width(),
                 y + h
             )
 
@@ -281,7 +349,26 @@ class MainWindow(QMainWindow):
 
             self.left_panel.hide()
 
+    def toggle_debug(self):
 
+        if self.debug_panel.isVisible():
+
+            self.debug_panel.hide()
+
+        else:
+
+            geo = self.frameGeometry()
+
+
+            self.debug_panel.move(
+                geo.x() - self.debug_panel.width(),
+                geo.y() + self.height()
+            )
+
+
+            self.debug_panel.show()
+
+            self.debug_panel.raise_()
 
     def toggle_bottom(self):
 
@@ -361,6 +448,10 @@ class MainWindow(QMainWindow):
             self.bottom_panel.setVisible(False)
             self.bottom_open = False
 
+        if hasattr(self, "debug_panel"):
+
+            self.debug_panel.setVisible(False)
+
 
         self.hide()
 
@@ -385,6 +476,8 @@ class MainWindow(QMainWindow):
 
         self.hide_to_tray()
 
+        self.console_panel.close()
+
         QApplication.quit()
 
 
@@ -394,3 +487,26 @@ class MainWindow(QMainWindow):
         self.hide_to_tray()
 
         event.ignore()
+
+    def toggle_console(self):
+
+        self.console_open = not self.console_open
+
+
+        if self.console_open:
+
+            geo = self.frameGeometry()
+
+
+            self.console_panel.move(
+                geo.x() + self.width(),
+                geo.y()
+            )
+
+
+            self.console_panel.show()
+            self.console_panel.raise_()
+
+        else:
+
+            self.console_panel.hide()
