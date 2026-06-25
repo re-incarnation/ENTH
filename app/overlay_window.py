@@ -7,7 +7,8 @@ from PySide6.QtWidgets import (
     QApplication
 )
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer, QUrl
+from PySide6.QtMultimedia import QSoundEffect
 from PySide6.QtWidgets import QListWidgetItem
 
 from app.titlebar import TitleBar
@@ -65,6 +66,18 @@ class MainWindow(QMainWindow):
         )
 
         self.trigger_queue = []
+
+        self.alert_sound = QSoundEffect()
+
+        self.alert_sound.setSource(
+            QUrl.fromLocalFile(
+                "assets/alert.wav"
+            )
+        )
+
+        self.alert_sound.setVolume(
+            0.8
+        )
 
 
 
@@ -204,6 +217,7 @@ class MainWindow(QMainWindow):
         self.btn_history.clicked.connect(
             self.copy_history
         )
+
 
 
         for btn in [
@@ -657,6 +671,8 @@ class MainWindow(QMainWindow):
         trigger
     ):
 
+        self.alert_sound.play()
+
         # записываем в json
         self.queue.add(
             trigger
@@ -716,6 +732,67 @@ class MainWindow(QMainWindow):
             f"Сообщение:\n{trigger.message}"
         )
 
+    def copy_history(self):
+
+        if not self.trigger_queue:
+            return
+
+
+        trigger = self.trigger_queue[0]
+
+
+        command = (
+            f"/history --player {trigger.player}"
+        )
+
+
+        QApplication.clipboard().setText(
+            command
+        )
+
+
+        self.btn_history.setText(
+            "✓ Скопировано"
+        )
+
+
+        self.btn_history.setStyleSheet("""
+            QPushButton {
+                background-color: rgba(50,180,80,180);
+                color:white;
+                border-radius:0px;
+                border:1px solid rgba(255,255,255,15);
+            }
+        """)
+
+
+        QTimer.singleShot(
+            1500,
+            self.restore_history_button
+        )
+
+    def restore_history_button(self):
+
+        self.btn_history.setText(
+            "История"
+        )
+
+
+        self.btn_history.setStyleSheet("""
+            QPushButton {
+                background-color: rgba(40,40,40,180);
+                color:white;
+                border-radius:0px;
+                border:1px solid rgba(255,255,255,15);
+            }
+
+            QPushButton:hover {
+                background-color: rgba(70,70,70,200);
+            }
+        """)
+        
+
+
     def closeEvent(self, event):
 
         self.hide_to_tray()
@@ -744,19 +821,3 @@ class MainWindow(QMainWindow):
         else:
 
             self.console_panel.hide()
-
-    def copy_history(self):
-
-        if not self.trigger_queue:
-            return
-
-
-        trigger = self.trigger_queue[0]
-
-
-        command = f"/history --player {trigger.player}"
-
-
-        QApplication.clipboard().setText(
-            command
-        )
