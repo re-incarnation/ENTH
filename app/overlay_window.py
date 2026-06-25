@@ -8,6 +8,7 @@ from PySide6.QtWidgets import (
 )
 
 from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QListWidgetItem
 
 from app.titlebar import TitleBar
 from app.tray import create_tray
@@ -23,6 +24,11 @@ from app.settings_panel import SettingsPanel
 from app.debug_panel import DebugPanel
 from app.console_panel import ConsolePanel
 from app.scripts.log_monitor import LogMonitor
+from app.scripts.trigger_manager import TriggerManager
+from app.scripts.trigger_queue import TriggerQueue
+from app.config import RULES_URL
+from app.scripts.trigger_models import TriggerEvent
+
 
 
 class MainWindow(QMainWindow):
@@ -38,6 +44,28 @@ class MainWindow(QMainWindow):
         self.old_pos = None
 
         self.log_monitor = LogMonitor()
+
+        self.trigger_manager = TriggerManager(
+            "app/rules.json",
+            "app/trigger_queue.json"
+        )
+
+
+        self.log_monitor.event.connect(
+            self.trigger_manager.process
+        )
+
+
+        self.trigger_manager.trigger_added.connect(
+            self.add_trigger
+        )
+
+        self.queue = TriggerQueue(
+            "app/trigger_queue.json"
+        )
+
+        self.trigger_queue = []
+
 
 
 
@@ -101,9 +129,56 @@ class MainWindow(QMainWindow):
             6
         )
 
+        from PySide6.QtWidgets import QLabel
 
-        self.layout.addStretch()
+        self.layout.addSpacing(10)
 
+        self.alert_label = QLabel(
+            "Ожидание..."
+        )
+
+        self.alert_label.setAlignment(
+            Qt.AlignCenter
+        )
+
+        self.alert_label.setStyleSheet("""
+            color:white;
+            font-size:22px;
+            font-weight:bold;
+        """)
+
+        self.layout.addWidget(
+            self.alert_label
+        )
+
+
+        self.player_label = QLabel("")
+        self.rule_id_label = QLabel("")
+        self.rule_name_label = QLabel("")
+        self.message_label = QLabel("")
+
+
+        for lbl in [
+            self.player_label,
+            self.rule_id_label,
+            self.rule_name_label,
+            self.message_label
+        ]:
+
+            lbl.setWordWrap(True)
+
+            lbl.setAlignment(
+                Qt.AlignCenter
+            )
+
+            lbl.setStyleSheet("""
+                color:white;
+                font-size:14px;
+            """)
+
+            self.layout.addWidget(
+                lbl
+            )
 
 
         self.btn_punish = QPushButton(
@@ -120,6 +195,14 @@ class MainWindow(QMainWindow):
 
         self.btn_settings = QPushButton(
             "Настройки"
+        )
+
+        self.btn_skip.clicked.connect(
+            self.skip_trigger
+        )
+
+        self.btn_history.clicked.connect(
+            self.copy_history
         )
 
 
@@ -154,6 +237,8 @@ class MainWindow(QMainWindow):
         self.btn_settings.clicked.connect(
             self.toggle_bottom
         )
+
+
 
 
         self.layout.setSpacing(6)
@@ -227,7 +312,6 @@ class MainWindow(QMainWindow):
             self.console_panel.add_message
         )
 
-
         self.console_panel.setWindowFlags(
             Qt.FramelessWindowHint |
             Qt.WindowStaysOnTopHint
@@ -290,13 +374,11 @@ class MainWindow(QMainWindow):
 
         self.bottom_panel.hide()
 
-
-
         self.tray = create_tray(
             self
         )
 
-
+        self.load_queue()
 
     def update_panels(self):
 
@@ -336,6 +418,74 @@ class MainWindow(QMainWindow):
                 x - self.debug_panel.width(),
                 y + h
             )
+
+    def load_queue(self):
+
+        self.trigger_queue.clear()
+
+
+        for item in self.queue.active():
+
+            self.trigger_queue.append(
+                TriggerEvent.from_dict(item)
+            )
+
+
+        if self.trigger_queue:
+
+            self.show_trigger(
+                self.trigger_queue[0]
+            )
+
+        else:
+
+            self.alert_label.setText(
+                "Ожидание..."
+            )
+
+            self.alert_label.setStyleSheet("""
+                color:white;
+                font-size:22px;
+                font-weight:bold;
+            """)
+
+            self.player_label.setText("")
+            self.rule_id_label.setText("")
+            self.rule_name_label.setText("")
+            self.message_label.setText("")
+
+    def skip_trigger(self):
+
+        if not self.trigger_queue:
+            return
+
+
+        trigger = self.trigger_queue.pop(0)
+
+
+        self.queue.skip(
+            trigger.id
+        )
+
+        self.load_queue()
+
+
+        if self.trigger_queue:
+
+            self.show_trigger(
+                self.trigger_queue[0]
+            )
+
+        else:
+
+            self.alert_label.setText(
+                "Ожидание..."
+            )
+
+            self.player_label.setText("")
+            self.rule_id_label.setText("")
+            self.rule_name_label.setText("")
+            self.message_label.setText("")
 
 
 
@@ -494,7 +644,77 @@ class MainWindow(QMainWindow):
 
         QApplication.quit()
 
+    def on_trigger_found(self, trigger):
 
+        print(
+            "TRIGGER FOUND:",
+            trigger
+        )
+
+
+    def add_trigger(
+        self,
+        trigger
+    ):
+
+        # записываем в json
+        self.queue.add(
+            trigger
+        )
+
+
+        # перечитываем очередь из json
+        self.load_queue()
+
+
+        # если это первый новый триггер
+        if self.trigger_queue:
+
+            self.show_trigger(
+                self.trigger_queue[0]
+            )
+
+    def show_trigger(
+        self,
+        trigger
+    ):
+
+        color = "#ffe100"
+
+        if trigger.severity == "red":
+
+            color = "#ff4040"
+
+
+        self.alert_label.setText(
+            f"● ALERT"
+        )
+
+        self.alert_label.setStyleSheet(f"""
+            color:{color};
+            font-size:22px;
+            font-weight:bold;
+        """)
+
+
+        self.player_label.setText(
+            f"<b>{trigger.player}</b>"
+        )
+
+
+        self.rule_id_label.setText(
+            f"Пункт:\n{trigger.rule_id}"
+        )
+
+
+        self.rule_name_label.setText(
+            f"Нарушение:\n{trigger.rule_name}"
+        )
+
+
+        self.message_label.setText(
+            f"Сообщение:\n{trigger.message}"
+        )
 
     def closeEvent(self, event):
 
@@ -524,3 +744,19 @@ class MainWindow(QMainWindow):
         else:
 
             self.console_panel.hide()
+
+    def copy_history(self):
+
+        if not self.trigger_queue:
+            return
+
+
+        trigger = self.trigger_queue[0]
+
+
+        command = f"/history --player {trigger.player}"
+
+
+        QApplication.clipboard().setText(
+            command
+        )

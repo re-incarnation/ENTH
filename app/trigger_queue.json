@@ -1,0 +1,52 @@
+[
+    {
+        "id": "9a5426ed-3888-487d-a723-6ded56893580",
+        "created_at": "2026-06-26T01:13:55.435711",
+        "player": "rawreincarnation",
+        "message": "? [s2] ? rawreincarnation » хуй",
+        "rule_id": "3.3",
+        "rule_name": "Мат, оскорбления, аморальный контент",
+        "severity": "yellow",
+        "status": "skipped"
+    },
+    {
+        "id": "2f974895-9e1d-4a6e-ac6c-f0f869e58579",
+        "created_at": "2026-06-26T01:16:34.142200",
+        "player": "rawreincarnation",
+        "message": "? [s2] ? rawreincarnation » хуй",
+        "rule_id": "3.3",
+        "rule_name": "Мат, оскорбления, аморальный контент",
+        "severity": "yellow",
+        "status": "skipped"
+    },
+    {
+        "id": "2f974895-9e1d-4a6e-ac6c-f0f869e58579",
+        "created_at": "2026-06-26T01:16:34.142200",
+        "player": "rawreincarnation",
+        "message": "? [s2] ? rawreincarnation » хуй",
+        "rule_id": "3.3",
+        "rule_name": "Мат, оскорбления, аморальный контент",
+        "severity": "yellow",
+        "status": "skipped"
+    },
+    {
+        "id": "17d53ea1-dd06-409b-bc3a-3b9209b63aad",
+        "created_at": "2026-06-26T01:19:51.650069",
+        "player": "rawreincarnation",
+        "message": "? [s2] ? rawreincarnation » хуй",
+        "rule_id": "3.3",
+        "rule_name": "Мат, оскорбления, аморальный контент",
+        "severity": "yellow",
+        "status": "skipped"
+    },
+    {
+        "id": "17d53ea1-dd06-409b-bc3a-3b9209b63aad",
+        "created_at": "2026-06-26T01:19:51.650069",
+        "player": "rawreincarnation",
+        "message": "? [s2] ? rawreincarnation » хуй",
+        "rule_id": "3.3",
+        "rule_name": "Мат, оскорбления, аморальный контент",
+        "severity": "yellow",
+        "status": "skipped"
+    }
+]

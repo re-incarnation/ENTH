@@ -9,7 +9,7 @@ class MinecraftLogParser:
     def __init__(self, logs_folder):
 
         self.logs_folder = logs_folder
-        self.position = 0
+        self.position = None
 
 
 
@@ -85,6 +85,17 @@ class MinecraftLogParser:
                 log_file,
                 "rb"
             ) as file:
+            
+                if self.position is None:
+
+                    file.seek(
+                        0,
+                        os.SEEK_END
+                    )
+
+                    self.position = file.tell()
+
+                    return []
 
 
                 file.seek(
@@ -173,10 +184,23 @@ class MinecraftLogParser:
 
         return {
             "type": "player_chat",
+            "player": self.extract_player(text),
             "message": text
         }
 
+    def extract_player(self, text):
 
+
+        if "»" in text:
+
+            return (
+                text
+                .split("»")[0]
+                .split()[-1]
+            )
+
+
+        return "Unknown"
 
     def get_messages(self):
 
