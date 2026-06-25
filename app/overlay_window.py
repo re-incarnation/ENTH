@@ -22,6 +22,7 @@ from app.punishment_panel import PunishmentPanel
 from app.settings_panel import SettingsPanel
 from app.debug_panel import DebugPanel
 from app.console_panel import ConsolePanel
+from app.scripts.log_monitor import LogMonitor
 
 
 class MainWindow(QMainWindow):
@@ -35,6 +36,8 @@ class MainWindow(QMainWindow):
         self.debug_open = False
 
         self.old_pos = None
+
+        self.log_monitor = LogMonitor()
 
 
 
@@ -219,6 +222,10 @@ class MainWindow(QMainWindow):
         )
 
         self.console_panel = ConsolePanel()
+
+        self.log_monitor.message.connect(
+            self.console_panel.add_message
+        )
 
 
         self.console_panel.setWindowFlags(
@@ -448,9 +455,16 @@ class MainWindow(QMainWindow):
             self.bottom_panel.setVisible(False)
             self.bottom_open = False
 
+
         if hasattr(self, "debug_panel"):
 
             self.debug_panel.setVisible(False)
+
+
+        if hasattr(self, "console_panel"):
+
+            self.console_panel.setVisible(False)
+            self.console_open = False
 
 
         self.hide()
