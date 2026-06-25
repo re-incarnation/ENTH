@@ -4,9 +4,9 @@ import os
 
 APP_NAME = "ENTH"
 
-APP_VERSION = "0.3.0"
+APP_VERSION = "0.6.0"
 
-GITHUB_LINK = ""
+GITHUB_LINK = "https://github.com/re-incarnation/ENTH"
 
 
 # =====================
@@ -81,6 +81,6 @@ PATH_LATTEST_LOG = SETTINGS.get(
     ""
 )
 
-RULES_URL = "https://github.com"
+RULES_URL = "https://enthusiasm.world/rules"
 
 SPECIAL_URL = "https://openai.com"
